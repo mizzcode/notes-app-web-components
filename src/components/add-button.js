@@ -12,7 +12,6 @@ class AddButton extends HTMLElement {
       </div>
     `;
 
-    // Add click event listener
     const button = this.querySelector('#add-note-button');
     if (button) {
       button.addEventListener('click', () => {
@@ -23,7 +22,6 @@ class AddButton extends HTMLElement {
 
   showAddNoteModal() {
 
-    // Check if modal already exists
     let modal = document.querySelector('add-note-modal');
 
     if (!modal) {
@@ -31,7 +29,6 @@ class AddButton extends HTMLElement {
       document.body.appendChild(modal);
     }
 
-    // Show the modal
     modal.style.display = 'block';
   }
 }

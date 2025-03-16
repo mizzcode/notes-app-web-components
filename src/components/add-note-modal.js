@@ -18,51 +18,162 @@ class AddNoteModal extends HTMLElement {
 
   render() {
     this.innerHTML = `
-      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-gray-800 p-6 rounded-lg w-full max-w-md mx-4">
-          <h2 class="text-xl font-bold mb-4">Add New Note</h2>
+      <style>
+        .modal-container {
+          position: fixed;
+          inset: 0;
+          background-color: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 50;
+        }
+        
+        .modal-content {
+          background-color: #1f2937;
+          padding: 1.5rem;
+          border-radius: 0.5rem;
+          width: 100%;
+          max-width: 28rem;
+          margin: 0 1rem;
+        }
+        
+        .modal-title {
+          font-size: 1.25rem;
+          font-weight: bold;
+          margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+          margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+          display: block;
+          font-size: 0.875rem;
+          font-weight: 500;
+          margin-bottom: 0.5rem;
+        }
+        
+        .form-input {
+          width: 100%;
+          border-radius: 0.375rem;
+          background-color: #374151;
+          border: 1px solid #4b5563;
+          padding: 0.5rem;
+          color: white;
+        }
+        
+        .textarea-input {
+          height: 8rem;
+        }
+        
+        .validation-message {
+          color: #ef4444;
+          font-size: 0.75rem;
+          margin-top: 0.25rem;
+          height: 1rem;
+        }
+        
+        .checkbox-container {
+          display: flex;
+          align-items: center;
+          margin-bottom: 1.5rem;
+        }
+        
+        .checkbox-input {
+          margin-right: 0.5rem;
+          cursor: pointer;
+        }
+        
+        .button-container {
+          display: flex;
+          justify-content: flex-end;
+          gap: 0.5rem;
+        }
+        
+        .cancel-button {
+          padding: 0.5rem 1rem;
+          border-radius: 0.375rem;
+          background-color: #374151;
+          color: white;
+          cursor: pointer;
+        }
+        
+        .cancel-button:hover {
+          background-color: #4b5563;
+        }
+        
+        .save-button {
+          padding: 0.5rem 1rem;
+          border-radius: 0.375rem;
+          background-color: #ef4444;
+          color: white;
+          cursor: pointer;
+        }
+        
+        .save-button:hover {
+          background-color: #dc2626;
+        }
+        
+        .error-border {
+          border-color: #ef4444;
+        }
+      </style>
+      
+      <div class="modal-container">
+        <div class="modal-content">
+          <h2 class="modal-title">Add New Note</h2>
           
-          <form id="add-note-form">
-            <div class="mb-4">
-              <label for="note-title" class="block text-sm font-medium mb-1">Title</label>
+          <form id="add-note-form" novalidate>
+            <div class="form-group">
+              <label for="note-title" class="form-label">Title</label>
               <input 
                 type="text" 
                 id="note-title" 
-                class="w-full rounded bg-gray-700 border border-gray-600 p-2 text-white"
+                name="title"
+                pattern="^[a-zA-Z0-9][a-zA-Z0-9 ._]{0,}[a-zA-Z0-9]$"
+                minlength="3"
+                autocomplete="off"
+                class="form-input"
                 placeholder="Note Title"
                 required
+                aria-describedby="titleValidation"
               >
+              <p id="titleValidation" class="validation-message" aria-live="polite"></p>
             </div>
             
-            <div class="mb-4">
-              <label for="note-body" class="block text-sm font-medium mb-1">Content</label>
+            <div class="form-group">
+              <label for="note-body" class="form-label">Content</label>
               <textarea 
                 id="note-body" 
-                class="w-full rounded bg-gray-700 border border-gray-600 p-2 text-white h-32"
+                name="body"
+                minlength="5"
+                class="form-input textarea-input"
                 placeholder="Write your note here..."
                 required
+                aria-describedby="bodyValidation"
               ></textarea>
+              <p id="bodyValidation" class="validation-message" aria-live="polite"></p>
             </div>
             
-            <div class="mb-4">
-              <label class="flex items-center">
-                <input type="checkbox" id="note-archive" class="mr-2">
-                <span>Archive this note</span>
-              </label>
+            <div class="checkbox-container">
+              <input type="checkbox" id="note-archive" name="archive" class="checkbox-input">
+              <span>Archive this note</span>
             </div>
             
-            <div class="flex justify-end space-x-2">
+            <div class="button-container">
               <button 
                 type="button" 
                 id="cancel-button"
-                class="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600"
+                class="cancel-button"
               >
                 Cancel
               </button>
               <button 
                 type="submit" 
                 id="save-button"
-                class="px-4 py-2 rounded bg-red-500 hover:bg-red-600"
+                class="save-button"
               >
                 Save Note
               </button>
@@ -75,15 +186,93 @@ class AddNoteModal extends HTMLElement {
 
   setupEventListeners() {
     const form = this.querySelector('#add-note-form');
+    const titleInput = form.elements.title;
+    const bodyInput = form.elements.body;
     const cancelButton = this.querySelector('#cancel-button');
 
-    if (form) {
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        this.saveNote();
-      });
-    }
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
 
+      // Check if form is valid before submitting
+      if (form.checkValidity()) {
+        this.saveNote();
+      } else {
+        // Form is invalid, show validation messages
+        this.validateForm();
+      }
+    });
+
+    // Custom validation for title
+    const titleValidationHandler = (event) => {
+      event.target.setCustomValidity('');
+
+      if (event.target.validity.valueMissing) {
+        event.target.setCustomValidity('Judul wajib diisi.');
+        return;
+      }
+
+      if (event.target.validity.tooShort) {
+        event.target.setCustomValidity(`Judul minimal ${event.target.minLength} karakter.`);
+        return;
+      }
+
+      if (event.target.validity.patternMismatch) {
+        event.target.setCustomValidity(
+          'Judul tidak boleh diawali atau diakhiri dengan simbol, mengandung spasi, atau mengandung karakter khusus.'
+        );
+        return;
+      }
+    };
+
+    // Custom validation for body
+    const bodyValidationHandler = (event) => {
+      event.target.setCustomValidity('');
+
+      if (event.target.validity.valueMissing) {
+        event.target.setCustomValidity('Konten wajib diisi.');
+        return;
+      }
+
+      if (event.target.validity.tooShort) {
+        event.target.setCustomValidity(`Konten minimal ${event.target.minLength} karakter.`);
+        return;
+      }
+    };
+
+    // Validation event listeners for title
+    titleInput.addEventListener('change', titleValidationHandler);
+    titleInput.addEventListener('invalid', titleValidationHandler);
+
+    // Validation event listeners for body
+    bodyInput.addEventListener('change', bodyValidationHandler);
+    bodyInput.addEventListener('invalid', bodyValidationHandler);
+
+    // Show validation message on blur
+    const handleBlur = (event) => {
+      // Validate the field
+      const isValid = event.target.validity.valid;
+      const errorMessage = event.target.validationMessage;
+      const connectedValidationId = event.target.getAttribute('aria-describedby');
+      const connectedValidationEl = connectedValidationId
+        ? document.getElementById(connectedValidationId)
+        : null;
+
+      if (connectedValidationEl) {
+        if (errorMessage && !isValid) {
+          connectedValidationEl.innerText = errorMessage;
+          event.target.classList.add('error-border');
+        } else {
+          connectedValidationEl.innerText = '';
+          event.target.classList.remove('error-border');
+        }
+      }
+    };
+
+    // Add blur event listeners
+    titleInput.addEventListener('blur', handleBlur);
+    bodyInput.addEventListener('blur', handleBlur);
+
+    // Cancel button
     if (cancelButton) {
       cancelButton.addEventListener('click', () => {
         this.closeModal();
@@ -92,21 +281,38 @@ class AddNoteModal extends HTMLElement {
 
     // Close when clicking outside the modal
     this.addEventListener('click', (e) => {
-      if (e.target === this.querySelector('div.fixed')) {
+      if (e.target === this.querySelector('.modal-container')) {
         this.closeModal();
       }
     });
   }
 
+  validateForm() {
+    // Trigger validation messages for all form elements
+    const form = this.querySelector('#add-note-form');
+    const formElements = form.elements;
+
+    // Loop through all form elements and trigger validation
+    for (let i = 0; i < formElements.length; i++) {
+      const element = formElements[i];
+      if (element.nodeName !== 'BUTTON' && element.nodeName !== 'FIELDSET') {
+        // Check validity and show validation message for invalid fields
+        if (!element.validity.valid) {
+          // Manually trigger the blur event to show validation message
+          element.dispatchEvent(new Event('blur'));
+        }
+      }
+    }
+  }
+
   saveNote() {
-    const titleInput = this.querySelector('#note-title');
-    const bodyInput = this.querySelector('#note-body');
-    const archiveInput = this.querySelector('#note-archive');
+    const form = this.querySelector('#add-note-form');
+    const formData = new FormData(form);
 
     const noteData = {
-      title: titleInput.value,
-      body: bodyInput.value,
-      archived: archiveInput.checked
+      title: formData.get('title'),
+      body: formData.get('body'),
+      archived: formData.get('archive') === 'on'
     };
 
     // Dispatch event with note data
@@ -122,9 +328,23 @@ class AddNoteModal extends HTMLElement {
   closeModal() {
     this.style.display = 'none';
 
-    // Reset form
+    // Reset form and validation messages
     const form = this.querySelector('#add-note-form');
+    const validationMessages = this.querySelectorAll('.validation-message');
+    const inputs = form.querySelectorAll('input, textarea');
+
+    // Reset the form
     if (form) form.reset();
+
+    // Clear validation messages
+    validationMessages.forEach(el => {
+      el.innerText = '';
+    });
+
+    // Remove error styling
+    inputs.forEach(input => {
+      input.classList.remove('error-border');
+    });
   }
 }
 

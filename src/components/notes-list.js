@@ -107,7 +107,6 @@ class NotesList extends HTMLElement {
       archived: noteData.archived || false
     };
 
-    // Add to the beginning of a new copy of the notes array
     this.notes = [newNote, ...this.notes];
     localStorage.setItem('notes', JSON.stringify(this.notes));
     this.render();
@@ -120,7 +119,6 @@ class NotesList extends HTMLElement {
       (this.currentView === 'archieve' && note.archived)
     );
 
-    // Create the notes list container using CSS Grid
     this.innerHTML = `
       <style>
         .notes-grid {
@@ -147,11 +145,13 @@ class NotesList extends HTMLElement {
 
     const container = this.querySelector('.notes-grid');
 
-    // Add note elements to the container
     filteredNotes.forEach(note => {
       const noteElement = document.createElement('note-item');
-      noteElement.setAttribute('title', note.title);
-      noteElement.id = note.id;
+
+      noteElement.setAttribute('note-title', note.title);
+      noteElement.setAttribute('note-id', note.id);
+      noteElement.setAttribute('note-body', note.body);
+
       container.appendChild(noteElement);
     });
   }

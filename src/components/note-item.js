@@ -1,40 +1,70 @@
 class NoteItem extends HTMLElement {
   constructor() {
     super();
-    this._title = '';
-    this._id = '';
+    this._noteTitle = ''; 
+    this._noteId = '';    
+    this._noteBody = ''; 
   }
 
   static get observedAttributes() {
-    return ['title', 'id'];
+    return ['note-title', 'note-id', 'note-body'];
   }
 
   connectedCallback() {
-    this._id = this.id; // Store the ID when connected
+    this._noteId = this.getAttribute('note-id') || this.id;
     this.render();
     this.attachEventListeners();
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue !== newValue) {
-      // Store the value in a private property
-      this[`_${name}`] = newValue;
+      switch (name) {
+        case 'note-title':
+          this._noteTitle = newValue;
+          break;
+        case 'note-id':
+          this._noteId = newValue;
+          break;
+        case 'note-body':
+          this._noteBody = newValue;
+          break;
+      }
       // Render konten ulang
       this.render();
-
-      // Reattach event listeners after rendering
-      if (this.isConnected) {
-        this.attachEventListeners();
-      }
     }
   }
 
+  // Getter dan setter untuk custom attributes
+  get noteTitle() {
+    return this.getAttribute('note-title');
+  }
+
+  set noteTitle(value) {
+    this.setAttribute('note-title', value);
+  }
+
+  get noteId() {
+    return this.getAttribute('note-id');
+  }
+
+  set noteId(value) {
+    this.setAttribute('note-id', value);
+  }
+
+  get noteBody() {
+    return this.getAttribute('note-body');
+  }
+
+  set noteBody(value) {
+    this.setAttribute('note-body', value);
+  }
+
   render() {
-    const title = this._title || this.getAttribute('title') || 'Untitled Note';
+    const title = this._noteTitle || this.getAttribute('note-title') || 'Untitled Note';
 
     this.innerHTML = `
       <div class="bg-[#2b2c2e] p-4 rounded-lg cursor-pointer h-full flex items-center">
-        <div class="w-full text-lg text-white">
+        <div class="w-full text-lg text-white mb-2">
           <h1>${title}</h1>
         </div>
         <div class="flex justify-end cursor-pointer">
@@ -65,7 +95,7 @@ class NoteItem extends HTMLElement {
 
     this.dispatchEvent(new CustomEvent('note-click', {
       bubbles: true,
-      detail: { noteId: this._id || this.id }
+      detail: { noteId: this._noteId || this.id }
     }));
   }
 
@@ -73,7 +103,7 @@ class NoteItem extends HTMLElement {
     e.stopPropagation(); // Prevent the note click handler from firing
     this.dispatchEvent(new CustomEvent('menu-click', {
       bubbles: true,
-      detail: { noteId: this._id || this.id }
+      detail: { noteId: this._noteId || this.id }
     }));
   }
 }
