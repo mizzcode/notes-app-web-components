@@ -14,7 +14,6 @@ class NoteDetail extends HTMLElement {
   }
 
   async showNote(noteId) {
-    console.log(`Showing note with ID: ${noteId}`);
     this._currentNoteId = noteId;
     await this._loadAndRenderNote();
 

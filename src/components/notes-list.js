@@ -131,7 +131,6 @@ class NotesList extends HTMLElement {
         detailComponent = document.createElement("note-detail");
         document.body.appendChild(detailComponent);
       }
-      console.log(note);
       detailComponent.showNote(note.id);
     } catch (error) {
       console.error("Error showing note details:", error);
