@@ -1,8 +1,10 @@
+import NotesService from "../data/api/notes.js";
+
 class NoteDetail extends HTMLElement {
   constructor() {
     super();
-    // Initialize properties
     this._currentNoteId = null;
+    this._currentNote = null;
   }
 
   connectedCallback() {
@@ -11,43 +13,67 @@ class NoteDetail extends HTMLElement {
     }
   }
 
-  // Public method to display a note
-  showNote(noteId) {
+  async showNote(noteId) {
     console.log(`Showing note with ID: ${noteId}`);
     this._currentNoteId = noteId;
-    this._loadAndRenderNote();
+    await this._loadAndRenderNote();
 
-    // Make visible immediately
-    this.style.position = 'fixed';
-    this.style.inset = '0';
-    this.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-    this.style.display = 'flex';
-    this.style.alignItems = 'center';
-    this.style.justifyContent = 'center';
-    this.style.zIndex = '1000';
+    this.style.position = "fixed";
+    this.style.inset = "0";
+    this.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+    this.style.display = "flex";
+    this.style.alignItems = "center";
+    this.style.justifyContent = "center";
+    this.style.zIndex = "1000";
   }
 
-  // Private method to load and render note data
-  _loadAndRenderNote() {
+  async _loadAndRenderNote() {
+    const loadingSpinner = document.createElement("loading-spinner");
+
     try {
-      // Get note data from localStorage
-      const notes = JSON.parse(localStorage.getItem('notes') || '[]');
-      const note = notes.find(n => n.id === this._currentNoteId);
+      loadingSpinner.show();
+      const note = await NotesService.getNoteById(this._currentNoteId);
 
       if (note) {
+        this._currentNote = note;
         this._renderNote(note);
       } else {
         this._renderNotFound();
       }
     } catch (err) {
-      console.error('Error loading note:', err);
+      console.error("Error loading note:", err);
       this._renderError(err.message);
+    } finally {
+      loadingSpinner.hide();
     }
   }
 
-  // Render a found note
+  _updateNoteInLocalStorage(updatedNote) {
+    try {
+      const storedNotes = JSON.parse(localStorage.getItem("notes") || "[]");
+
+      const noteIndex = storedNotes.findIndex(
+        (note) => note.id === updatedNote.id,
+      );
+
+      if (noteIndex !== -1) {
+        // Update the note
+        storedNotes[noteIndex] = {
+          ...storedNotes[noteIndex],
+          ...updatedNote,
+        };
+
+        localStorage.setItem("notes", JSON.stringify(storedNotes));
+      } else {
+        storedNotes.push(updatedNote);
+        localStorage.setItem("notes", JSON.stringify(storedNotes));
+      }
+    } catch (err) {
+      console.error("Error updating note in localStorage:", err);
+    }
+  }
+
   _renderNote(note) {
-    // Format date
     const createdDate = new Date(note.createdAt).toLocaleString();
 
     this.innerHTML = `
@@ -168,19 +194,19 @@ class NoteDetail extends HTMLElement {
             <h2 class="note-title">${note.title}</h2>
             <div class="note-meta">
               <span class="note-date">Created: ${createdDate}</span>
-              <span class="note-status ${note.archived ? 'status-archived' : 'status-active'}">
-                ${note.archived ? 'Archived' : 'Active'}
+              <span class="note-status ${note.archived ? "status-archived" : "status-active"}">
+                ${note.archived ? "Archived" : "Active"}
               </span>
             </div>
           </div>
           
           <div class="note-body">
-            ${note.body || 'No content'}
+            ${note.body || "No content"}
           </div>
           
           <div class="note-actions">
             <button id="archive-button" class="action-button archive-button">
-              ${note.archived ? 'Unarchive' : 'Archive'}
+              ${note.archived ? "Unarchive" : "Archive"}
             </button>
             <button id="close-detail" class="action-button close-button">
               Close
@@ -190,41 +216,66 @@ class NoteDetail extends HTMLElement {
       </div>
     `;
 
-    // Add event listeners
-    this.querySelector('#close-detail').addEventListener('click', () => this.close());
-    this.querySelector('#archive-button').addEventListener('click', () => this._toggleArchiveStatus(note));
+    this.querySelector("#close-detail").addEventListener("click", () =>
+      this.close(),
+    );
+    this.querySelector("#archive-button").addEventListener("click", () =>
+      this._toggleArchiveStatus(),
+    );
 
-    // Click outside to close
-    this.querySelector('.note-detail-overlay').addEventListener('click', (e) => {
-      if (e.target === this.querySelector('.note-detail-overlay')) {
+    this.querySelector(".note-detail-overlay").addEventListener(
+      "click",
+      (e) => {
+        if (e.target === this.querySelector(".note-detail-overlay")) {
+          this.close();
+        }
+      },
+    );
+  }
+
+  async _toggleArchiveStatus() {
+    try {
+      if (!this._currentNote) return;
+
+      let archivedNote;
+      if (this._currentNote.archived) {
+        archivedNote = await NotesService.unarchiveNote(this._currentNote.id);
+
+        Swal.fire({
+          title: "Note Unarchived",
+          text: "The note has been unarchived successfully.",
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+      } else {
+        archivedNote = await NotesService.archiveNote(this._currentNote.id);
+
+        Swal.fire({
+          title: "Note Archived",
+          text: "The note has been archived successfully.",
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+      }
+
+      if (archivedNote) {
+        this._updateNoteInLocalStorage(archivedNote);
+
+        // Dispatch event to update the notes list
+        this.dispatchEvent(
+          new CustomEvent("note-updated", {
+            bubbles: true,
+            detail: archivedNote,
+          }),
+        );
+
         this.close();
       }
-    });
-  }
-
-  // Toggle archive status
-  _toggleArchiveStatus(note) {
-    try {
-      const notes = JSON.parse(localStorage.getItem('notes') || '[]');
-      const noteIndex = notes.findIndex(n => n.id === this._currentNoteId);
-
-      if (noteIndex !== -1) {
-        notes[noteIndex].archived = !notes[noteIndex].archived;
-        localStorage.setItem('notes', JSON.stringify(notes));
-
-        // Dispatch event to update UI
-        this.dispatchEvent(new CustomEvent('note-updated', {
-          bubbles: true
-        }));
-      }
     } catch (err) {
-      console.error('Error toggling archive status:', err);
+      console.error("Error toggling archive status:", err);
     }
-
-    this.close();
   }
 
-  // Render not found message
   _renderNotFound() {
     this.innerHTML = `
       <style>
@@ -286,20 +337,21 @@ class NoteDetail extends HTMLElement {
       </div>
     `;
 
-    const closeButton = this.querySelector('#close-detail');
+    const closeButton = this.querySelector("#close-detail");
     if (closeButton) {
-      closeButton.addEventListener('click', () => this.close());
+      closeButton.addEventListener("click", () => this.close());
     }
 
-    // Click outside to close
-    this.querySelector('.note-detail-overlay').addEventListener('click', (e) => {
-      if (e.target === this.querySelector('.note-detail-overlay')) {
-        this.close();
-      }
-    });
+    this.querySelector(".note-detail-overlay").addEventListener(
+      "click",
+      (e) => {
+        if (e.target === this.querySelector(".note-detail-overlay")) {
+          this.close();
+        }
+      },
+    );
   }
 
-  // Render error message
   _renderError(message) {
     this.innerHTML = `
       <style>
@@ -363,23 +415,24 @@ class NoteDetail extends HTMLElement {
       </div>
     `;
 
-    const closeButton = this.querySelector('#close-detail');
+    const closeButton = this.querySelector("#close-detail");
     if (closeButton) {
-      closeButton.addEventListener('click', () => this.close());
+      closeButton.addEventListener("click", () => this.close());
     }
 
-    // Click outside to close
-    this.querySelector('.note-detail-overlay').addEventListener('click', (e) => {
-      if (e.target === this.querySelector('.note-detail-overlay')) {
-        this.close();
-      }
-    });
+    this.querySelector(".note-detail-overlay").addEventListener(
+      "click",
+      (e) => {
+        if (e.target === this.querySelector(".note-detail-overlay")) {
+          this.close();
+        }
+      },
+    );
   }
 
-  // Close the detail view
   close() {
-    this.style.display = 'none';
+    this.style.display = "none";
   }
 }
 
-customElements.define('note-detail', NoteDetail);
+customElements.define("note-detail", NoteDetail);

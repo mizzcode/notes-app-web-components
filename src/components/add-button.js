@@ -12,25 +12,24 @@ class AddButton extends HTMLElement {
       </div>
     `;
 
-    const button = this.querySelector('#add-note-button');
+    const button = this.querySelector("#add-note-button");
     if (button) {
-      button.addEventListener('click', () => {
+      button.addEventListener("click", () => {
         this.showAddNoteModal();
       });
     }
   }
 
   showAddNoteModal() {
-
-    let modal = document.querySelector('add-note-modal');
+    let modal = document.querySelector("add-note-modal");
 
     if (!modal) {
-      modal = document.createElement('add-note-modal');
+      modal = document.createElement("add-note-modal");
       document.body.appendChild(modal);
     }
 
-    modal.style.display = 'block';
+    modal.style.display = "block";
   }
 }
 
-customElements.define('add-button', AddButton);
+customElements.define("add-button", AddButton);

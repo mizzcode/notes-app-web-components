@@ -1,17 +1,17 @@
 class NoteItem extends HTMLElement {
   constructor() {
     super();
-    this._noteTitle = ''; 
-    this._noteId = '';    
-    this._noteBody = ''; 
+    this._noteTitle = "";
+    this._noteId = "";
+    this._noteBody = "";
   }
 
   static get observedAttributes() {
-    return ['note-title', 'note-id', 'note-body'];
+    return ["note-title", "note-id", "note-body"];
   }
 
   connectedCallback() {
-    this._noteId = this.getAttribute('note-id') || this.id;
+    this._noteId = this.getAttribute("note-id") || this.id;
     this.render();
     this.attachEventListeners();
   }
@@ -19,48 +19,47 @@ class NoteItem extends HTMLElement {
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue !== newValue) {
       switch (name) {
-        case 'note-title':
+        case "note-title":
           this._noteTitle = newValue;
           break;
-        case 'note-id':
+        case "note-id":
           this._noteId = newValue;
           break;
-        case 'note-body':
+        case "note-body":
           this._noteBody = newValue;
           break;
       }
-      // Render konten ulang
       this.render();
     }
   }
 
-  // Getter dan setter untuk custom attributes
   get noteTitle() {
-    return this.getAttribute('note-title');
+    return this.getAttribute("note-title");
   }
 
   set noteTitle(value) {
-    this.setAttribute('note-title', value);
+    this.setAttribute("note-title", value);
   }
 
   get noteId() {
-    return this.getAttribute('note-id');
+    return this.getAttribute("note-id");
   }
 
   set noteId(value) {
-    this.setAttribute('note-id', value);
+    this.setAttribute("note-id", value);
   }
 
   get noteBody() {
-    return this.getAttribute('note-body');
+    return this.getAttribute("note-body");
   }
 
   set noteBody(value) {
-    this.setAttribute('note-body', value);
+    this.setAttribute("note-body", value);
   }
 
   render() {
-    const title = this._noteTitle || this.getAttribute('note-title') || 'Untitled Note';
+    const title =
+      this._noteTitle || this.getAttribute("note-title") || "Untitled Note";
 
     this.innerHTML = `
       <div class="bg-[#2b2c2e] p-4 rounded-lg cursor-pointer h-full flex items-center">
@@ -77,35 +76,36 @@ class NoteItem extends HTMLElement {
   }
 
   attachEventListeners() {
-    // Directly attach the click handler to the entire component
-    this.addEventListener('click', this.handleNoteClick.bind(this));
+    this.addEventListener("click", this.handleNoteClick.bind(this));
 
-    // Add menu button click handler
-    const menuBtn = this.querySelector('.menu-btn');
+    const menuBtn = this.querySelector(".menu-btn");
     if (menuBtn) {
-      menuBtn.addEventListener('click', this.handleMenuClick.bind(this));
+      menuBtn.addEventListener("click", this.handleMenuClick.bind(this));
     }
   }
 
   handleNoteClick(e) {
-    // Don't trigger if the menu button was clicked
-    if (e.target.closest('.menu-btn')) {
+    if (e.target.closest(".menu-btn")) {
       return;
     }
 
-    this.dispatchEvent(new CustomEvent('note-click', {
-      bubbles: true,
-      detail: { noteId: this._noteId || this.id }
-    }));
+    this.dispatchEvent(
+      new CustomEvent("note-click", {
+        bubbles: true,
+        detail: { noteId: this._noteId || this.id },
+      }),
+    );
   }
 
   handleMenuClick(e) {
-    e.stopPropagation(); // Prevent the note click handler from firing
-    this.dispatchEvent(new CustomEvent('menu-click', {
-      bubbles: true,
-      detail: { noteId: this._noteId || this.id }
-    }));
+    e.stopPropagation();
+    this.dispatchEvent(
+      new CustomEvent("menu-click", {
+        bubbles: true,
+        detail: { noteId: this._noteId || this.id },
+      }),
+    );
   }
 }
 
-customElements.define('note-item', NoteItem);
+customElements.define("note-item", NoteItem);
