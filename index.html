@@ -1,29 +1,35 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Notes App</title>
-    <link href="./src/output.css" rel="stylesheet" />
     <style>
       add-note-modal {
         background-color: rgba(0, 0, 0, 0.5);
       }
 
-      add-note-modal[style*='display: block'] {
+      add-note-modal[style*="display: block"] {
         display: flex !important;
         align-items: center;
         justify-content: center;
       }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+    <script type="module" src="./dist/bundle.js"></script>
   </head>
   <body class="bg-gray-950 text-white mx-7 flex flex-col min-h-screen">
     <template id="header">
       <header>
         <div class="flex justify-between mt-10 items-center">
           <div class="flex items-center gap-4">
-            <img src="./src/images/kamado.png" class="rounded-full w-10 h-10 object-cover" alt="Misbahudin" />
-            <slot name="fullName">Hi, Misbahudin</slot>
+            <img
+              src="./src/images/kamado.png"
+              class="rounded-full w-10 h-10 object-cover"
+              id="img-kamado"
+              alt="Misbahudin"
+            />
+            <slot name="fullName">Hi, Mizz!</slot>
           </div>
         </div>
       </header>
@@ -31,10 +37,16 @@
 
     <template id="tabs">
       <div class="flex mt-10 items-center justify-center gap-5">
-        <div id="tab-notes" class="py-2 px-11 border border-white rounded-3xl cursor-pointer active">
+        <div
+          id="tab-notes"
+          class="py-2 px-11 border border-white rounded-3xl cursor-pointer active"
+        >
           <p>NOTES</p>
         </div>
-        <div id="tab-archieve" class="py-2 px-9 border border-[#35383c] bg-[#202224] rounded-3xl cursor-pointer">
+        <div
+          id="tab-archieve"
+          class="py-2 px-9 border border-[#35383c] bg-[#202224] rounded-3xl cursor-pointer"
+        >
           <p>ARCHIEVE</p>
         </div>
       </div>
@@ -52,7 +64,5 @@
     </footer>
 
     <add-note-modal style="display: none"></add-note-modal>
-
-    <script type="module" src="./src/components/index.js"></script>
   </body>
 </html>

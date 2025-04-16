@@ -2,13 +2,13 @@ class AddNoteModal extends HTMLElement {
   constructor() {
     super();
 
-    this.style.display = 'none';
-    this.style.position = 'fixed';
-    this.style.top = '0';
-    this.style.left = '0';
-    this.style.width = '100%';
-    this.style.height = '100%';
-    this.style.zIndex = '1000';
+    this.style.display = "none";
+    this.style.position = "fixed";
+    this.style.top = "0";
+    this.style.left = "0";
+    this.style.width = "100%";
+    this.style.height = "100%";
+    this.style.zIndex = "1000";
   }
 
   connectedCallback() {
@@ -157,11 +157,6 @@ class AddNoteModal extends HTMLElement {
               <p id="bodyValidation" class="validation-message" aria-live="polite"></p>
             </div>
             
-            <div class="checkbox-container">
-              <input type="checkbox" id="note-archive" name="archive" class="checkbox-input">
-              <span>Archive this note</span>
-            </div>
-            
             <div class="button-container">
               <button 
                 type="button" 
@@ -185,74 +180,71 @@ class AddNoteModal extends HTMLElement {
   }
 
   setupEventListeners() {
-    const form = this.querySelector('#add-note-form');
+    const form = this.querySelector("#add-note-form");
     const titleInput = form.elements.title;
     const bodyInput = form.elements.body;
-    const cancelButton = this.querySelector('#cancel-button');
+    const cancelButton = this.querySelector("#cancel-button");
 
-    form.addEventListener('submit', (e) => {
+    form.addEventListener("submit", (e) => {
       e.preventDefault();
 
-      // Check if form is valid before submitting
       if (form.checkValidity()) {
         this.saveNote();
       } else {
-        // Form is invalid, show validation messages
         this.validateForm();
       }
     });
 
-    // Custom validation for title
     const titleValidationHandler = (event) => {
-      event.target.setCustomValidity('');
+      event.target.setCustomValidity("");
 
       if (event.target.validity.valueMissing) {
-        event.target.setCustomValidity('Judul wajib diisi.');
+        event.target.setCustomValidity("Judul wajib diisi.");
         return;
       }
 
       if (event.target.validity.tooShort) {
-        event.target.setCustomValidity(`Judul minimal ${event.target.minLength} karakter.`);
+        event.target.setCustomValidity(
+          `Judul minimal ${event.target.minLength} karakter.`,
+        );
         return;
       }
 
       if (event.target.validity.patternMismatch) {
         event.target.setCustomValidity(
-          'Judul tidak boleh diawali atau diakhiri dengan simbol, mengandung spasi, atau mengandung karakter khusus.'
+          "Judul tidak boleh diawali atau diakhiri dengan simbol, mengandung spasi, atau mengandung karakter khusus.",
         );
         return;
       }
     };
 
-    // Custom validation for body
     const bodyValidationHandler = (event) => {
-      event.target.setCustomValidity('');
+      event.target.setCustomValidity("");
 
       if (event.target.validity.valueMissing) {
-        event.target.setCustomValidity('Konten wajib diisi.');
+        event.target.setCustomValidity("Konten wajib diisi.");
         return;
       }
 
       if (event.target.validity.tooShort) {
-        event.target.setCustomValidity(`Konten minimal ${event.target.minLength} karakter.`);
+        event.target.setCustomValidity(
+          `Konten minimal ${event.target.minLength} karakter.`,
+        );
         return;
       }
     };
 
-    // Validation event listeners for title
-    titleInput.addEventListener('change', titleValidationHandler);
-    titleInput.addEventListener('invalid', titleValidationHandler);
+    titleInput.addEventListener("change", titleValidationHandler);
+    titleInput.addEventListener("invalid", titleValidationHandler);
 
-    // Validation event listeners for body
-    bodyInput.addEventListener('change', bodyValidationHandler);
-    bodyInput.addEventListener('invalid', bodyValidationHandler);
+    bodyInput.addEventListener("change", bodyValidationHandler);
+    bodyInput.addEventListener("invalid", bodyValidationHandler);
 
-    // Show validation message on blur
     const handleBlur = (event) => {
-      // Validate the field
       const isValid = event.target.validity.valid;
       const errorMessage = event.target.validationMessage;
-      const connectedValidationId = event.target.getAttribute('aria-describedby');
+      const connectedValidationId =
+        event.target.getAttribute("aria-describedby");
       const connectedValidationEl = connectedValidationId
         ? document.getElementById(connectedValidationId)
         : null;
@@ -260,65 +252,58 @@ class AddNoteModal extends HTMLElement {
       if (connectedValidationEl) {
         if (errorMessage && !isValid) {
           connectedValidationEl.innerText = errorMessage;
-          event.target.classList.add('error-border');
+          event.target.classList.add("error-border");
         } else {
-          connectedValidationEl.innerText = '';
-          event.target.classList.remove('error-border');
+          connectedValidationEl.innerText = "";
+          event.target.classList.remove("error-border");
         }
       }
     };
 
-    // Add blur event listeners
-    titleInput.addEventListener('blur', handleBlur);
-    bodyInput.addEventListener('blur', handleBlur);
+    titleInput.addEventListener("blur", handleBlur);
+    bodyInput.addEventListener("blur", handleBlur);
 
-    // Cancel button
     if (cancelButton) {
-      cancelButton.addEventListener('click', () => {
+      cancelButton.addEventListener("click", () => {
         this.closeModal();
       });
     }
 
     // Close when clicking outside the modal
-    this.addEventListener('click', (e) => {
-      if (e.target === this.querySelector('.modal-container')) {
+    this.addEventListener("click", (e) => {
+      if (e.target === this.querySelector(".modal-container")) {
         this.closeModal();
       }
     });
   }
 
   validateForm() {
-    // Trigger validation messages for all form elements
-    const form = this.querySelector('#add-note-form');
+    const form = this.querySelector("#add-note-form");
     const formElements = form.elements;
 
-    // Loop through all form elements and trigger validation
     for (let i = 0; i < formElements.length; i++) {
       const element = formElements[i];
-      if (element.nodeName !== 'BUTTON' && element.nodeName !== 'FIELDSET') {
-        // Check validity and show validation message for invalid fields
+      if (element.nodeName !== "BUTTON" && element.nodeName !== "FIELDSET") {
         if (!element.validity.valid) {
-          // Manually trigger the blur event to show validation message
-          element.dispatchEvent(new Event('blur'));
+          element.dispatchEvent(new Event("blur"));
         }
       }
     }
   }
 
   saveNote() {
-    const form = this.querySelector('#add-note-form');
+    const form = this.querySelector("#add-note-form");
     const formData = new FormData(form);
 
     const noteData = {
-      title: formData.get('title'),
-      body: formData.get('body'),
-      archived: formData.get('archive') === 'on'
+      title: formData.get("title"),
+      body: formData.get("body"),
+      archived: formData.get("archive") === "on",
     };
 
-    // Dispatch event with note data
-    const event = new CustomEvent('note-created', {
+    const event = new CustomEvent("note-created", {
       bubbles: true,
-      detail: noteData
+      detail: noteData,
     });
 
     this.dispatchEvent(event);
@@ -326,26 +311,22 @@ class AddNoteModal extends HTMLElement {
   }
 
   closeModal() {
-    this.style.display = 'none';
+    this.style.display = "none";
 
-    // Reset form and validation messages
-    const form = this.querySelector('#add-note-form');
-    const validationMessages = this.querySelectorAll('.validation-message');
-    const inputs = form.querySelectorAll('input, textarea');
+    const form = this.querySelector("#add-note-form");
+    const validationMessages = this.querySelectorAll(".validation-message");
+    const inputs = form.querySelectorAll("input, textarea");
 
-    // Reset the form
     if (form) form.reset();
 
-    // Clear validation messages
-    validationMessages.forEach(el => {
-      el.innerText = '';
+    validationMessages.forEach((el) => {
+      el.innerText = "";
     });
 
-    // Remove error styling
-    inputs.forEach(input => {
-      input.classList.remove('error-border');
+    inputs.forEach((input) => {
+      input.classList.remove("error-border");
     });
   }
 }
 
-customElements.define('add-note-modal', AddNoteModal);
+customElements.define("add-note-modal", AddNoteModal);
