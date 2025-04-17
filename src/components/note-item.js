@@ -68,7 +68,7 @@ class NoteItem extends HTMLElement {
         </div>
         <div class="flex justify-end cursor-pointer">
           <button class="menu-btn">
-            <img src="./src/images/more.png" class="w-6 h-6 cursor-pointer" alt="Menu" />
+            <img src="../src/images/more.png" class="w-6 h-6 cursor-pointer" alt="Menu" />
           </button>
         </div>
       </div>

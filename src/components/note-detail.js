@@ -233,7 +233,11 @@ class NoteDetail extends HTMLElement {
   }
 
   async _toggleArchiveStatus() {
+    const loadingSpinner = document.createElement("loading-spinner");
+
     try {
+      loadingSpinner.show();
+
       if (!this._currentNote) return;
 
       let archivedNote;
@@ -272,6 +276,8 @@ class NoteDetail extends HTMLElement {
       }
     } catch (err) {
       console.error("Error toggling archive status:", err);
+    } finally {
+      loadingSpinner.hide();
     }
   }
 
