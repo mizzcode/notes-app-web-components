@@ -8,14 +8,14 @@
   },
   "scripts": {
     "build": "npx tailwindcss -i ./src/input.css -o ./src/output.css --minify && webpack --mode production",
-    "start-dev": "webpack serve",
-    "watch": "webpack --mode development --watch"
+    "start-dev": "webpack serve"
   },
   "devDependencies": {
     "@babel/core": "^7.26.10",
     "@babel/preset-env": "^7.26.9",
     "babel-loader": "^10.0.0",
     "css-loader": "^7.1.2",
+    "html-webpack-plugin": "^5.6.3",
     "prettier": "3.5.3",
     "style-loader": "^4.0.0",
     "webpack": "^5.99.5",
