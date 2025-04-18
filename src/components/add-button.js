@@ -7,7 +7,7 @@ class AddButton extends HTMLElement {
     this.innerHTML = `
       <div class="p-6">
         <button id="add-note-button" class="border border-red-500 p-3 rounded-full w-1/2 flex items-center justify-center mx-auto cursor-pointer hover:bg-red-500/10 transition-colors">
-          <img src="./src/images/plus-minus.png" class="w-7 h-7" alt="Add Note" />
+          <img src="../src/images/plus-minus.png" class="w-7 h-7" alt="Add Note" />
         </button>
       </div>
     `;
